@@ -39,8 +39,7 @@ namespace KindleManager.Utils
 
         internal static string GetMyClippingPath()
         {
-            var docPath = GetEbookDocumentPath();
-            return Path.Combine(docPath, AppSetting.MyClippingFileName);
+            return Path.Combine(AppSetting.DataDirectory, AppSetting.MyClippingFileName);
         }
 
         internal static bool IsEbookConnected()
@@ -58,13 +57,12 @@ namespace KindleManager.Utils
         {
             if (IsEbookConnected())
             {
-                var filePath = USBDevice.GetMyClippingPath();
+                var docPath = GetEbookDocumentPath();
+                var filePath = Path.Combine(docPath, AppSetting.MyClippingFileName);
                 if (File.Exists(filePath))
                     File.Copy(filePath, Path.Combine(AppSetting.DataDirectory, AppSetting.MyClippingFileName), true);
             }
-
         }
-
     }
 
     public class USBDeviceWatcher : Form
