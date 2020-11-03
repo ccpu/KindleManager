@@ -24,13 +24,16 @@ namespace KindleManager
 
             ContextMenu menu = new ContextMenu();
 
-            menu.MenuItems.Add("Transfer Docs", OpenTransferDocs);
+            menu.MenuItems.Add("Transfer docs", OpenTransferDocs);
             this.SystemTrayIcon.ContextMenu = menu;
 
-            menu.MenuItems.Add("My Clippings", OpenMyClipping);
+            menu.MenuItems.Add("Clear old docs", clareOldDocs);
             this.SystemTrayIcon.ContextMenu = menu;
 
-            menu.MenuItems.Add("Open Data Directory", OpenExplorer);
+            menu.MenuItems.Add("My clippings", OpenMyClipping);
+            this.SystemTrayIcon.ContextMenu = menu;
+
+            menu.MenuItems.Add("Open data directory", OpenExplorer);
             this.SystemTrayIcon.ContextMenu = menu;
 
             menu.MenuItems.Add("Setting", onSettingClick);
@@ -51,6 +54,26 @@ namespace KindleManager
 
             USBDeviceWatcher = new USBDeviceWatcher();
             USBDeviceWatcher.OnChange += USBDeviceWatcher_OnChange1;
+        }
+
+        private void clareOldDocs(object sender, EventArgs e)
+        {
+            if (!USBDevice.IsEbookConnected())
+            {
+                MessageBox.Show("Kindle not connected");
+                return;
+            }
+            var files = Directory.GetFiles(AppSetting.OldDocumentFolder);
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                var kindleFilePath = Path.Combine(USBDevice.GetEbookDocumentPath(), fileName);
+                if (!File.Exists(kindleFilePath))
+                {
+                    File.Delete(file);
+                }
+            }
+            MessageBox.Show("Old docs cleared");
         }
 
         private void OpenMyClipping(object sender, EventArgs e)
