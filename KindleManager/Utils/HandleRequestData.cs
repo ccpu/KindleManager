@@ -14,6 +14,7 @@ namespace KindleManager.Utils
         public static int ProcessContent(RequestModel requestData)
         {
             var fileName = Path.GetInvalidFileNameChars().Aggregate(requestData.Title, (current, c) => current.Replace(c.ToString(), "-"));
+            fileName = fileName.Truncate(220);
             string filePath = Path.Combine(AppSetting.TempFolder, fileName + ".html");
 
             try
