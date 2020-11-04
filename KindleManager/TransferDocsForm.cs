@@ -93,7 +93,7 @@ namespace KindleManager
                     var deviceFilePath = Path.Combine(deviceDocPath, fileName);
 
                     FileAsyncCopy copy = new FileAsyncCopy(file, deviceFilePath);
-                    copy.Completed += Copy_Completed; ;
+                    copy.Completed += Copy_Completed;
                     copy.StartAsync();
                 }
                 lblMsg.Text = "";
