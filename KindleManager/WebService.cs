@@ -77,7 +77,8 @@ namespace KindleManager
                 }
                 catch (Exception e)
                 {
-                    if (e is HttpListenerException) return; //this gets thrown when the listener is stopped
+                    throw e;
+                    // if (e is HttpListenerException) return; //this gets thrown when the listener is stopped
                     //TODO: Log the exception
                 }
             }
