@@ -1,17 +1,17 @@
-﻿using KindleManager.Models;
+﻿using Kindlegen;
+using KindleManager.Models;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace KindleManager.Utils
 {
     public static class HandleRequestData
     {
-        public static int ProcessContent(RequestModel requestData)
+        public static async Task<int> ProcessContent(RequestModel requestData)
         {
             var fileName = Path.GetInvalidFileNameChars().Aggregate(requestData.Title, (current, c) => current.Replace(c.ToString(), "-"));
             fileName = fileName.Truncate(200);
@@ -29,7 +29,7 @@ namespace KindleManager.Utils
 
                 File.WriteAllText(filePath, requestData.Html);
 
-                WriteToStreamAsync(fileName);
+                await WriteToStreamAsync(fileName);
                 VisitedSite.Add(requestData.Link);
 
                 return (int)HttpStatusCode.OK;
@@ -41,43 +41,19 @@ namespace KindleManager.Utils
             }
         }
 
-        private static void WriteToStreamAsync(string fileName)
+        private static async Task WriteToStreamAsync(string fileName)
         {
-            var tcs = new TaskCompletionSource<object>();
 
             var filepath = Path.Combine(AppSetting.TempFolder, fileName + ".html");
             var tempMobipath = Path.Combine(AppSetting.TempFolder, fileName + ".mobi");
             var newMobipath = Path.Combine(AppSetting.NewDocumentFolder, fileName + ".mobi");
 
-            var lines = new StringBuilder();
-
             if (!File.Exists(filepath)) throw new Exception("not html file");
 
             if (!File.Exists(tempMobipath))
             {
-                var kindleGen = new Process
-                {
-                    StartInfo =
-                    {
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        FileName = AppSetting.KindlegenFileName,
-                        Arguments = string.Format(@"""{0}""", filepath),
-                        CreateNoWindow=true,
-                    }
-                };
-                kindleGen.Start();
-                while (!kindleGen.StandardOutput.EndOfStream)
-                {
-                    string line = kindleGen.StandardOutput.ReadLine();
-                    if (string.IsNullOrEmpty(line) || line.Contains("Hyperlink not resolved:"))
-                        continue;
-                    lines.AppendLine(line);
-                }
-                kindleGen.WaitForExit();
+                await RunProcessAsync(filepath);
             }
-
-            tcs.SetResult(null);
 
             if (File.Exists(filepath))
                 File.Delete(filepath);
@@ -95,6 +71,28 @@ namespace KindleManager.Utils
             File.Copy(tempMobipath, Path.Combine(AppSetting.NewDocumentFolder, fileName + ".mobi"));
 
             File.Delete(tempMobipath);
+        }
+
+        static async Task<KindleConvertResult> RunProcessAsync(string filepath)
+        {
+            //var tcs = new TaskCompletionSource<int>();
+
+            var process = new Process
+            {
+                StartInfo =
+                    {
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        FileName = AppSetting.KindlegenFileName,
+                        Arguments = string.Format(@"""{0}""", filepath),
+                        CreateNoWindow=true,
+                    }
+            };
+
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            await process.WaitForExitAsync();
+            return KindleOutputParser.ParseOutput(output);
         }
 
     }
