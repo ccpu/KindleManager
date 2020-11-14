@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using KindleManager.Utils;
+using System.IO;
 
 namespace KindleManager
 {
@@ -105,15 +106,13 @@ namespace KindleManager
                         switch (context.Request.HttpMethod)
                         {
                             case "POST":
-                            var keys = new HttpContentParser(context).GetHttpListenerPostValue();
-
-                            RequestModel data = new RequestModel
+                            RequestModel data;
+                            using (var reader = new StreamReader(context.Request.InputStream,
+                                 context.Request.ContentEncoding))
                             {
-                                Html = keys.Find(x => x.name == "html").value,
-                                Link = keys.Find(x => x.name == "link").value,
-                                ReSend = Boolean.Parse(keys.Find(x => x.name == "reSend").value),
-                                Title = keys.Find(x => x.name == "title").value
-                            };
+                                var jsonString = reader.ReadToEnd();
+                                data = JsonConvert.DeserializeObject<RequestModel>(jsonString);
+                            }
 
                             if (string.IsNullOrEmpty(data.Html) || string.IsNullOrEmpty(data.Link) || string.IsNullOrEmpty(data.Title))
                             {

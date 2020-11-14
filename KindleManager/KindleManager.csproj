@@ -82,7 +82,6 @@
     <Compile Include="Utils\StringExt.cs" />
     <Compile Include="Utils\USBDevice.cs" />
     <Compile Include="Utils\VisitedSite.cs" />
-    <Compile Include="Utils\HttpContentParser.cs" />
     <Compile Include="Models\RequestModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
