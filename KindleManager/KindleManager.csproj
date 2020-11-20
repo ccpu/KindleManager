@@ -316,6 +316,7 @@
     <Compile Include="Utils\FileAsyncCopy.cs" />
     <Compile Include="Utils\KindleOutputParser.cs" />
     <Compile Include="Utils\StringExt.cs" />
+    <Compile Include="Utils\StringExtensions.cs" />
     <Compile Include="Utils\USBDevice.cs" />
     <Compile Include="Utils\VisitedSite.cs" />
     <Compile Include="Models\RequestModel.cs" />
@@ -367,7 +368,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\kindlegen.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\ebook.ico" />
   </ItemGroup>

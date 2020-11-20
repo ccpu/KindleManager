@@ -27,7 +27,7 @@ namespace KindleManager.Utils
                     return 208;
                 }
 
-                File.WriteAllText(filePath, requestData.Html);
+                File.WriteAllText(filePath, requestData.Html.ToUTF8());
 
                 await WriteToStreamAsync(fileName);
                 VisitedSite.Add(requestData.Link);
