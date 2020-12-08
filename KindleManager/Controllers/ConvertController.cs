@@ -2,6 +2,7 @@
 using KindleManager.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Net;
 using System.Web;
 
 namespace DotNetSelfHost.WinForms.Controllers
@@ -13,8 +14,9 @@ namespace DotNetSelfHost.WinForms.Controllers
         [HttpPost]
         public async System.Threading.Tasks.Task<IActionResult> PostAsync([FromBody] RequestModel data)
         {
-            await HandleRequestData.ProcessContent(data);
-            return new OkResult();
+            return await HandleRequestData.ProcessContent(data);
+
+
         }
     }
 }

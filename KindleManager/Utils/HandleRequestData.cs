@@ -6,12 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace KindleManager.Utils
 {
     public static class HandleRequestData
     {
-        public static async Task<int> ProcessContent(RequestModel requestData)
+        public static async Task<StatusCodeResult> ProcessContent(RequestModel requestData)
         {
             var fileName = Path.GetInvalidFileNameChars().Aggregate(requestData.Title, (current, c) => current.Replace(c.ToString(), "-"));
             fileName = fileName.Truncate(200);
@@ -24,7 +25,7 @@ namespace KindleManager.Utils
 
                 if (!requestData.ReSend && VisitedSite.IsSiteVisited(requestData.Link))
                 {
-                    return 208;
+                    return new StatusCodeResult(208);
                 }
 
                 File.WriteAllText(filePath, requestData.Html.ToUTF8());
@@ -32,7 +33,7 @@ namespace KindleManager.Utils
                 await WriteToStreamAsync(fileName);
                 VisitedSite.Add(requestData.Link);
 
-                return (int)HttpStatusCode.OK;
+                return new OkResult();
             }
             catch (Exception e)
             {
