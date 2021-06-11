@@ -15,8 +15,6 @@ namespace DotNetSelfHost.WinForms.Controllers
         public async System.Threading.Tasks.Task<IActionResult> PostAsync([FromBody] RequestModel data)
         {
             return await HandleRequestData.ProcessContent(data);
-
-
         }
     }
 }
