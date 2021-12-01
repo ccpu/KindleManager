@@ -49,7 +49,7 @@ namespace KindleManager
             Exception e = (Exception)args.ExceptionObject;
             using (EventLog eventLog = new EventLog("Application"))
             {
-                eventLog.Source = "Application";
+                eventLog.Source = "KindleManager";
                 eventLog.WriteEntry(e.Message, EventLogEntryType.Error, 101, 1);
             }
             Console.WriteLine("ExceptionHandler caught : " + e.Message);
