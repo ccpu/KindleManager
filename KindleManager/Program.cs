@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -19,9 +21,12 @@ namespace KindleManager
         [STAThread]
         static void Main()
         {
-            if (System.Diagnostics.Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetEntryAssembly().Location)).Count() > 1)
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += new UnhandledExceptionEventHandler(MyExceptionHandler);
+
+            if (Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetEntryAssembly().Location)).Count() > 1)
             {
-                System.Diagnostics.Process.GetCurrentProcess().Kill();
+                Process.GetCurrentProcess().Kill();
                 return;
             }
 
@@ -38,6 +43,19 @@ namespace KindleManager
             }
 
         }
+
+        private static void MyExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+        {
+            Exception e = (Exception)args.ExceptionObject;
+            using (EventLog eventLog = new EventLog("Application"))
+            {
+                eventLog.Source = "Application";
+                eventLog.WriteEntry(e.Message, EventLogEntryType.Error, 101, 1);
+            }
+            Console.WriteLine("ExceptionHandler caught : " + e.Message);
+            Console.WriteLine("Runtime terminating: {0}", args.IsTerminating);
+        }
+
         public static IWebHostBuilder CreateWebHostBuilder() =>
             WebHost.CreateDefaultBuilder()
             .UseUrls("http://localhost:8800")
@@ -66,4 +84,6 @@ namespace KindleManager
             app.UseMvc();
         }
     }
+
+
 }
