@@ -23,7 +23,12 @@ namespace KindleManager
 
             cbStartOnBoot.Checked = regValue != null;
             cbShowOnConnect.Checked = Utils.AppSetting.Setting.StartOnDeviceInsert;
+            chkAutoSendEmail.Checked= Utils.AppSetting.Setting.AutoSendEmail;
             tbValumeName.Text = Utils.AppSetting.Setting.EbookValumeName;
+            tbEmailFrom.Text = Utils.AppSetting.Setting.EmailFrom;
+            tbEmailFromPass.Text = Utils.AppSetting.Setting.EmailFromPass;
+            tbKindleEmail.Text = Utils.AppSetting.Setting.KindleEmailTo;
+            tbCalibreFilePath.Text = Utils.AppSetting.Setting.CalibreEbookEonvertFile;
         }
 
         private void tbDataDirectory_Click(object sender, EventArgs e)
@@ -40,12 +45,28 @@ namespace KindleManager
         {
             var dataDirectory = tbDataDirectory.Text;
 
+            if (string.IsNullOrEmpty(dataDirectory) )
+            {
+                MessageBox.Show("Please provide data directory path.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(tbCalibreFilePath.Text))
+            {
+                MessageBox.Show("Please provide calibre ebook-convert.exe path.");
+                return;
+            }
 
             string json = JsonConvert.SerializeObject(new Utils.Setting
             {
                 DataDirectory = dataDirectory,
                 EbookValumeName = tbValumeName.Text,
-                StartOnDeviceInsert = cbShowOnConnect.Checked
+                StartOnDeviceInsert = cbShowOnConnect.Checked,
+                AutoSendEmail= chkAutoSendEmail.Checked,
+                EmailFrom = tbEmailFrom.Text,
+                EmailFromPass = tbEmailFromPass.Text,
+                KindleEmailTo = tbKindleEmail.Text,
+                CalibreEbookEonvertFile=tbCalibreFilePath.Text
             });
 
             File.WriteAllText(Utils.AppSetting.SettingFilePath, json);
@@ -68,5 +89,20 @@ namespace KindleManager
 
         }
 
+        private void tbCalibreFilePath_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            openFileDialog.Title = "Select an Executable File";
+            openFileDialog.Filter = "Executable Files|*.exe";
+            openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string selectedFilePath = openFileDialog.FileName;
+                tbCalibreFilePath.Text = selectedFilePath;
+            }
+
+        }
     }
 }

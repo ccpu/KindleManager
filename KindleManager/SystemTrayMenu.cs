@@ -24,10 +24,13 @@ namespace KindleManager
 
             ContextMenu menu = new ContextMenu();
 
-            menu.MenuItems.Add("Transfer docs", OpenTransferDocs);
+            menu.MenuItems.Add("Transfer documents with email", transferWithEmail);
             this.SystemTrayIcon.ContextMenu = menu;
 
-            menu.MenuItems.Add("Clear old docs", clareOldDocs);
+            menu.MenuItems.Add("Transfer documents with USB cable", OpenTransferDocs);
+            this.SystemTrayIcon.ContextMenu = menu;
+
+            menu.MenuItems.Add("Clear old Documents", clareOldDocs);
             this.SystemTrayIcon.ContextMenu = menu;
 
             menu.MenuItems.Add("My clippings", OpenMyClipping);
@@ -45,15 +48,31 @@ namespace KindleManager
             this.Resize += WindowResize;
             this.FormClosing += WindowClosing;
 
-            if (string.IsNullOrEmpty(Utils.AppSetting.Setting.DataDirectory))
+            if (string.IsNullOrEmpty(Utils.AppSetting.Setting.DataDirectory) 
+                || string.IsNullOrEmpty(Utils.AppSetting.Setting.CalibreEbookEonvertFile) 
+                || !File.Exists(AppSetting.Setting.CalibreEbookEonvertFile))
             {
                 var form = new SettingForm();
                 form.Show();
-                MessageBox.Show("Please select data directory.");
+                MessageBox.Show("Please provide required settings.");
             }
+
+
 
             USBDeviceWatcher = new USBDeviceWatcher();
             USBDeviceWatcher.OnChange += USBDeviceWatcher_OnChange1;
+        }
+
+        private void transferWithEmail(object sender, EventArgs e)
+        {
+
+            var files = Directory.GetFiles(Utils.AppSetting.NewDocumentFolder);
+            foreach (var file in files)
+            {
+                SendEmailToKindle.Send(file);
+            }
+
+            MessageBox.Show("Transfer Completed");
         }
 
         private void clareOldDocs(object sender, EventArgs e)

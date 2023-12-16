@@ -10,17 +10,26 @@ namespace KindleManager.Utils
         {
             EbookValumeName = "Kindle";
             StartOnDeviceInsert = true;
+            AutoSendEmail = true;
         }
         public string DataDirectory { get; set; }
+        public string EmailFrom { get; set; }
+        public string EmailFromPass { get; set; }
+        public string KindleEmailTo { get; set; }
+
+        public string CalibreEbookEonvertFile { get; set; }
+
+        public bool AutoSendEmail { get; set; }
+
         public string EbookValumeName { get; set; }
         public bool StartOnDeviceInsert { get; set; }
     }
     public static class AppSetting
     {
         public static string SettingFileName = "setting.json";
-        public static string KindlegenFileName = "lib/kindlegen.exe";
         public static readonly string StartupRegistryKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
         public static readonly string AppName = "KindleManager";
+
 
         public static bool IsTransferDocsFormOpen = false;
 

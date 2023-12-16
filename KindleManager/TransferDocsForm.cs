@@ -79,6 +79,7 @@ namespace KindleManager
 
         }
 
+
         private void btnTransfer_Click(object sender, EventArgs e)
         {
             DriveInfo selectedDevice = _devices.Find(x => x.Name == usbListBox.SelectedValue);

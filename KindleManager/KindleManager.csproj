@@ -315,6 +315,7 @@
     <Compile Include="Utils\AppSetting.cs" />
     <Compile Include="Utils\FileAsyncCopy.cs" />
     <Compile Include="Utils\KindleOutputParser.cs" />
+    <Compile Include="Utils\SendEmailToKindle.cs" />
     <Compile Include="Utils\StringExt.cs" />
     <Compile Include="Utils\StringExtensions.cs" />
     <Compile Include="Utils\USBDevice.cs" />
@@ -367,9 +368,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\kindlegen.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Resources\ebook.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

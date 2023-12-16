@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using System.Windows.Forms;
 
 namespace KindleManager.Utils
 {
@@ -46,54 +47,62 @@ namespace KindleManager.Utils
         {
 
             var filepath = Path.Combine(AppSetting.TempFolder, fileName + ".html");
-            var tempMobipath = Path.Combine(AppSetting.TempFolder, fileName + ".mobi");
-            var newMobipath = Path.Combine(AppSetting.NewDocumentFolder, fileName + ".mobi");
+            var temPath = Path.Combine(AppSetting.TempFolder, fileName + ".epub");
+            var newPath = Path.Combine(AppSetting.NewDocumentFolder, fileName + ".epub");
 
             if (!File.Exists(filepath)) throw new Exception("not html file");
 
-            if (!File.Exists(tempMobipath))
+            if (!File.Exists(temPath))
             {
-                await RunProcessAsync(filepath);
+                await RunProcessAsync(filepath, temPath);
             }
 
             if (File.Exists(filepath))
                 File.Delete(filepath);
 
-            if (!File.Exists(tempMobipath))
+            if (!File.Exists(temPath))
             {
                 throw new Exception("Unable to generate mobi file!");
             }
 
-            if (File.Exists(newMobipath))
+            if (File.Exists(newPath))
             {
-                File.Delete(newMobipath);
+                File.Delete(newPath);
             }
 
-            File.Copy(tempMobipath, Path.Combine(AppSetting.NewDocumentFolder, fileName + ".mobi"));
+            File.Copy(temPath, Path.Combine(AppSetting.NewDocumentFolder, fileName + ".epub"));
 
-            File.Delete(tempMobipath);
+            File.Delete(temPath);
         }
 
-        static async Task<KindleConvertResult> RunProcessAsync(string filepath)
+        static async Task RunProcessAsync(string inputFile, string outputFile)
         {
-            //var tcs = new TaskCompletionSource<int>();
-
-            var process = new Process
+            try
             {
-                StartInfo =
+                var outputProfile = "kindle";
+
+                var process = new Process
+                {
+                    StartInfo =
                     {
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
-                        FileName = AppSetting.KindlegenFileName,
-                        Arguments = string.Format(@"""{0}""", filepath),
+                        FileName = AppSetting.Setting.CalibreEbookEonvertFile,
                         CreateNoWindow=true,
-                    }
-            };
+                        Arguments = string.Format("\"{0}\" \"{1}\" --output-profile={2} --no-default-epub-cover --insert-blank-line --insert-blank-line-size=0.5", inputFile, outputFile, outputProfile)
+                }
+                };
 
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            await process.WaitForExitAsync();
-            return KindleOutputParser.ParseOutput(output);
+                process.Start();
+                await process.WaitForExitAsync();
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show("An error occurred:" + Environment.NewLine + ex.Message);
+            }
+
+
         }
 
     }

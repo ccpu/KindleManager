@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using KindleManager.Utils;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -6,10 +7,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Net.WebRequestMethods;
 
 namespace KindleManager
 {
@@ -35,13 +39,31 @@ namespace KindleManager
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Utils.AppSetting.LoadSetting();
+            AppSetting.LoadSetting();
+
+            if (AppSetting.Setting.AutoSendEmail)
+            {
+                FileSystemWatcher watcher = new FileSystemWatcher
+                {
+                    Path = AppSetting.NewDocumentFolder,
+                    EnableRaisingEvents = true
+                };
+                watcher.Created += new FileSystemEventHandler(OnFileCreated);
+            }
 
             using (new SystemTrayMenu())
             {
                 Application.Run();
             }
 
+
+        }
+
+        // Define the event handler for the Created event
+        private static void OnFileCreated(object sender, FileSystemEventArgs e)
+        {
+            Thread.Sleep(4000);
+            SendEmailToKindle.Send(e.FullPath);
         }
 
         private static void MyExceptionHandler(object sender, UnhandledExceptionEventArgs args)
