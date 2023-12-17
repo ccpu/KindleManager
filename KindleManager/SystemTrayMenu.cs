@@ -33,10 +33,10 @@ namespace KindleManager
             menu.MenuItems.Add("Clear old Documents", clareOldDocs);
             this.SystemTrayIcon.ContextMenu = menu;
 
-            menu.MenuItems.Add("My clippings", OpenMyClipping);
+            menu.MenuItems.Add("My clippings", OpenMyClippingClick);
             this.SystemTrayIcon.ContextMenu = menu;
 
-            menu.MenuItems.Add("Open data directory", OpenExplorer);
+            menu.MenuItems.Add("Open data directory", OnOpenExplorerClick);
             this.SystemTrayIcon.ContextMenu = menu;
 
             menu.MenuItems.Add("Setting", onSettingClick);
@@ -94,19 +94,16 @@ namespace KindleManager
             }
             MessageBox.Show("Old docs cleared");
         }
-
-        private void OpenMyClipping(object sender, EventArgs e)
+        private void OpenMyClippingClick(object sender, EventArgs e)
         {
             var form = new MyClippingForm();
             form.Show();
         }
-
         private void SystemTrayIcon_Click(object sender, EventArgs e)
         {
             if (!AppSetting.IsTransferDocsFormOpen && (e as MouseEventArgs).Button == MouseButtons.Left)
             {
-                var form = new MyClippingForm();
-                form.Show();
+                OpenExplorer();
             }
         }
 
@@ -143,9 +140,14 @@ namespace KindleManager
             Environment.Exit(0);
         }
 
-        private void OpenExplorer(object sender, EventArgs e)
+        private void OpenExplorer()
         {
             Process.Start("explorer.exe", Utils.AppSetting.Setting.DataDirectory);
+        }
+
+        private void OnOpenExplorerClick(object sender, EventArgs e)
+        {
+            OpenExplorer();
         }
 
 
