@@ -336,6 +336,7 @@
     </Compile>
     <Compile Include="Utils\HandleRequestData.cs" />
     <Compile Include="Utils\WaitForExitAsync.cs" />
+    <Compile Include="Utils\NewDocWatcher.cs" />
     <EmbeddedResource Include="MyClippingForm.resx">
       <DependentUpon>MyClippingForm.cs</DependentUpon>
     </EmbeddedResource>

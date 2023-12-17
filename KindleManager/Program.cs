@@ -41,15 +41,7 @@ namespace KindleManager
 
             AppSetting.LoadSetting();
 
-            if (AppSetting.Setting.AutoSendEmail)
-            {
-                FileSystemWatcher watcher = new FileSystemWatcher
-                {
-                    Path = AppSetting.NewDocumentFolder,
-                    EnableRaisingEvents = true
-                };
-                watcher.Created += new FileSystemEventHandler(OnFileCreated);
-            }
+            new KindleManager.Utils.NewDocWatcher();
 
             using (new SystemTrayMenu())
             {
@@ -57,13 +49,6 @@ namespace KindleManager
             }
 
 
-        }
-
-        // Define the event handler for the Created event
-        private static void OnFileCreated(object sender, FileSystemEventArgs e)
-        {
-            Thread.Sleep(4000);
-            SendEmailToKindle.Send(e.FullPath);
         }
 
         private static void MyExceptionHandler(object sender, UnhandledExceptionEventArgs args)
