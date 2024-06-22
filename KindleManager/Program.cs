@@ -65,7 +65,7 @@ namespace KindleManager
 
         public static IWebHostBuilder CreateWebHostBuilder() =>
             WebHost.CreateDefaultBuilder()
-            .UseUrls("http://localhost:8800")
+            .UseUrls("http://localhost:55021")
         .UseStartup<Startup>();
 
         public static SystemTrayMenu Form { get; private set; }
