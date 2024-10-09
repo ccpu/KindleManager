@@ -1,87 +1,113 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Net.Mime;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Header;
-using System.Windows.Forms;
+using System.Net.Mail;
 using System.Threading;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
+using Google.Apis.Services;
+using Google.Apis.Util.Store;
+using Thread = System.Threading.Thread;
 
 namespace KindleManager.Utils
 {
     internal class SendEmailToKindle
     {
-        public static bool Send(string file)
+        static string[] Scopes = { GmailService.Scope.GmailSend };
+        static string ApplicationName = "Gmail API .NET Quickstart";
+
+
+
+        public static bool Send(string filePath)
         {
             var emailFrom = AppSetting.Setting.EmailFrom;
-            var emailFromPass = AppSetting.Setting.EmailFromPass;
             var emailTo = AppSetting.Setting.KindleEmailTo;
-
-            if (emailFrom == null || emailFromPass == null || emailTo == null)
-                throw new Exception("you must set environment variables 'emailFrom','emailFromPass','emailTo', set this variables in azure function application settings or for debugging in local.settings.json. ");
-
-            var fromAddress = new MailAddress(emailFrom);
-            var toAddress = new MailAddress(emailTo);
-            const string subject = "From Chrome ToKindle APP";
-            const string body = "From Chrome ToKindle APP";
-            var smtp = new SmtpClient
-            {
-                Host = "smtp-mail.outlook.com",
-                Port = 587,
-                EnableSsl = true,
-                DeliveryMethod = SmtpDeliveryMethod.Network,
-                Credentials = new NetworkCredential(fromAddress.Address, emailFromPass)
-            };
-            // Create  the file attachment for this e-mail message.
-            var data = new Attachment(file, MediaTypeNames.Application.Octet);
-            // Add time stamp information for the file.
-            var disposition = data.ContentDisposition;
-            disposition.CreationDate = File.GetCreationTime(file);
-            disposition.ModificationDate = File.GetLastWriteTime(file);
-            disposition.ReadDate = File.GetLastAccessTime(file);
-
             var sent = false;
 
-            using (var message = new MailMessage(fromAddress, toAddress)
+            UserCredential credential;
+
+            using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
-                Subject = subject,
-                Body = body,
-                Attachments = { data },
-                // Set the delivery notification option
-                DeliveryNotificationOptions = DeliveryNotificationOptions.OnSuccess
-            })
+                string credPath = "token.json";
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore(credPath, true)).Result;
+                Console.WriteLine("Credential file saved to: " + credPath);
+            }
+
+            // Create Gmail API service.
+            var service = new GmailService(new BaseClientService.Initializer()
             {
+                HttpClientInitializer = credential,
+                ApplicationName = ApplicationName,
+            });
+
+            // Create the email content
+            var email = new AE.Net.Mail.MailMessage
+            {
+                Subject = "From Chrome To Kindle APP",
+                Body = "From Chrome To Kindle APP",
+                From = new MailAddress(emailFrom)
+            };
+            email.To.Add(new MailAddress(emailTo));
+
+            var fileName = Path.GetFileName(filePath);
+
+            byte[] fileBytes = File.ReadAllBytes(filePath);
+
+            // Determine MIME type based on file extension
+            string mimeType = "application/octet-stream"; // Default MIME type
+            if (fileName.EndsWith(".epub"))
+            {
+                mimeType = "application/epub+zip";
+            }
+            else if (fileName.EndsWith(".pdf"))
+            {
+                mimeType = "application/pdf";
+            }
+            Console.WriteLine("MIME type: " + mimeType);
+
+            // Create and add the attachment
+            var attachment = new AE.Net.Mail.Attachment(fileBytes, fileName, mimeType);
+            email.Attachments.Add(attachment);
+
+            attachment.Headers.Add("Content-Disposition", $"attachment; filename=\"{fileName}\"");
+
+
+            // Convert email to base64 format
+            using (var memoryStream = new MemoryStream())
+            {
+                email.Save(memoryStream);
+                var message = new Message
+                {
+                    Raw = Convert.ToBase64String(memoryStream.ToArray())
+                        .Replace('+', '-').Replace('/', '_').Replace("=", "")
+                };
+
                 try
                 {
-                    // Send the email
-                    smtp.Send(message);
-                    sent = true;
-                }
-                catch (SmtpFailedRecipientException ex)
-                {
-                    MessageBox.Show("Failed to deliver email to " + ex.FailedRecipient + ". Status code: "
-                        + ex.StatusCode + Environment.NewLine + " Message:" + ex.Message + "");
+                    // Send email
+                    service.Users.Messages.Send(message, "me").Execute();
+                    sent = true; // Set sent to true if the email is sent successfully
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("An error occurred:" + Environment.NewLine + ex.Message);
+                    Console.WriteLine("An error occurred: " + ex.Message);
                 }
             }
 
             if (sent)
             {
-                var fileName = Path.GetFileName(file);
                 var oldFilePath = Path.Combine(AppSetting.OldDocumentFolder, fileName);
                 if (!File.Exists(oldFilePath))
                 {
-                    File.Copy(file, oldFilePath);
+                    File.Copy(filePath, oldFilePath);
                 }
                 Thread.Sleep(2000);
-                File.Delete(file);
+                File.Delete(filePath);
             }
 
             return sent;
